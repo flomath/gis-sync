@@ -29,7 +29,7 @@ public class OSMSyncController implements ISyncController {
 
 
         JsonUtility jsonUtility = new JsonUtility();
-        Reader osmReader = jsonUtility.fetchDataFromUrl("");
+        jsonUtility.fetchTransportationRoutes("http://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%3B%0A%2F%2F%20fetch%20area%20%E2%80%9CVorarlberg%E2%80%9D%20to%20search%20in%0Aarea%283600076327%29-%3E.searchArea%3B%0A%2F%2F%20gather%20results%0A%28%0A%20%20%2F%2F%20query%20part%20for%3A%20%E2%80%9Croute%3Dtrain%22%20and%20%22route%3Dbus%22%0A%20%20relation%5B%22route%22%3D%22train%22%5D%28area.searchArea%29%3B%0A%20%20relation%5B%22route%22%3D%22bus%22%5D%28area.searchArea%29%3B%0A%29%3B%0Aforeach%28%20%20%20%20%20%20%20%20%20%20%20%0A%20%20out%3B%20%20%20%20%20%20%20%20%20%20%20%20%20%2F%2F%20output%20relations%0A%29%3B%0A%3E%3E%3B%0Aout%20meta%20qt%3B");
 
     }
 

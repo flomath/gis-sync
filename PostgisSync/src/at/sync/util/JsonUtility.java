@@ -1,39 +1,51 @@
 package at.sync.util;
 
-import at.sync.model.POI;
 import at.sync.model.TransportationRoute;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  */
 public class JsonUtility implements IUtility {
-
-    private List<POI> pois;
-    private List<TransportationRoute> transportationRoutes;
+    private static final String OSM_ROOT = "elements";
 
     @Override
-    public void fetchDataFromUrl(String url) {
+    public List<TransportationRoute> fetchTransportationRoutes(String url) {
+        List<TransportationRoute> result = new ArrayList<TransportationRoute>();
+
         try {
             InputStream is = new URL(url).openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
 
-            // convert whole json to objects
+            StringBuilder jsonDataString = new StringBuilder();
+            int cp;
+            while ((cp = reader.read()) != -1) {
+                jsonDataString.append((char) cp);
+            }
+
+            JSONObject root = new JSONObject(jsonDataString.toString());
+            JSONArray arr = root.getJSONArray(OSM_ROOT);
+            for (int i = 0; i < arr.length(); i++)
+            {
+                String post_id = arr.getJSONObject(i).getString("id");
+
+            }
+
+
 
         } catch (Exception exc) {
 
         }
-    }
 
-    @Override
-    public List<POI> getPOIs() {
-
-        return null;
+        return result;
     }
 }
