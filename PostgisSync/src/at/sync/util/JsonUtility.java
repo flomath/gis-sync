@@ -37,7 +37,7 @@ public class JsonUtility implements IUtility {
             for (int i = 0; i < arr.length(); i++)
             {
                 String post_id = arr.getJSONObject(i).getString("id");
-
+                System.out.println(post_id);
             }
 
 
