@@ -13,12 +13,13 @@ public class Schedule {
     private Timestamp explicitDate;
     private Timestamp arrivalTime;
     private Timestamp departureTime;
-    private String seqNo;
+    private int seqNo;
+    private POI poi;
 
     public Schedule() {
     }
 
-    public Schedule(String id, int tripNo, Timestamp validFrom, Timestamp validUntil, Timestamp explicitDate, Timestamp arrivalTime, Timestamp departureTime, String seqNo) {
+    public Schedule(String id, int tripNo, Timestamp validFrom, Timestamp validUntil, Timestamp explicitDate, Timestamp arrivalTime, Timestamp departureTime, int seqNo) {
         this.id = id;
         this.tripNo = tripNo;
         this.validFrom = validFrom;
@@ -85,11 +86,19 @@ public class Schedule {
         this.departureTime = departureTime;
     }
 
-    public String getSeqNo() {
+    public int getSeqNo() {
         return seqNo;
     }
 
-    public void setSeqNo(String seqNo) {
+    public void setSeqNo(int seqNo) {
         this.seqNo = seqNo;
+    }
+
+    public POI getPoi() {
+        return poi;
+    }
+
+    public void setPoi(POI poi) {
+        this.poi = poi;
     }
 }

@@ -1,9 +1,7 @@
 package at.sync.util;
 
-import at.sync.model.POI;
 import at.sync.model.TransportationRoute;
 
-import java.io.Reader;
 import java.util.List;
 
 /**

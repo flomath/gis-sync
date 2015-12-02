@@ -3,8 +3,7 @@ package at.sync.model;
 /**
  * OpenStreetMap types like bus_stop, station,..
  */
-public class POIType
-{
+public class POIType {
     private String id;
     private String name;
     private boolean isPrivate;
@@ -12,8 +11,7 @@ public class POIType
     public POIType() {
     }
 
-    public POIType(String id, String name, boolean isPrivate)
-    {
+    public POIType(String id, String name, boolean isPrivate) {
         this.id = id;
         this.name = name;
         this.isPrivate = isPrivate;

@@ -28,18 +28,16 @@ public class JsonUtility implements IUtility {
 
             StringBuilder jsonDataString = new StringBuilder();
             int cp;
-            while ((cp = reader.read()) != -1) {
+            while ( (cp = reader.read()) != -1 ) {
                 jsonDataString.append((char) cp);
             }
 
             JSONObject root = new JSONObject(jsonDataString.toString());
             JSONArray arr = root.getJSONArray(OSM_ROOT);
-            for (int i = 0; i < arr.length(); i++)
-            {
+            for ( int i = 0; i < arr.length(); i++ ) {
                 String post_id = arr.getJSONObject(i).getString("id");
                 System.out.println(post_id);
             }
-
 
 
         } catch (Exception exc) {

@@ -1,6 +1,7 @@
 package at.sync.model;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 /**
  * Public transportation route
@@ -18,6 +19,7 @@ public class TransportationRoute {
     private String descriptionTo;
     private String description;
     private String routeNo;
+    private ArrayList<Schedule> schedules = new ArrayList<>();
 
     public TransportationRoute() {
     }
@@ -131,5 +133,13 @@ public class TransportationRoute {
 
     public void setRouteNo(String routeNo) {
         this.routeNo = routeNo;
+    }
+
+    public ArrayList<Schedule> getSchedules() {
+        return schedules;
+    }
+
+    public void setSchedules(ArrayList<Schedule> schedules) {
+        this.schedules = schedules;
     }
 }

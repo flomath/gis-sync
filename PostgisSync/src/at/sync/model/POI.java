@@ -4,19 +4,19 @@ package at.sync.model;
  * POI - Point of Interest
  * Represents a Building, Station, Place,..
  */
-public class POI
-{
+public class POI {
     private String id;
     private String name;
     private POIType poiType;
     private double radius;
     private String extRef;
+    private double latitude;
+    private double longitude;
 
     public POI() {
     }
 
-    public POI(String id, String name, double radius, String ext_ref, POIType poiType)
-    {
+    public POI(String id, String name, double radius, String ext_ref, POIType poiType) {
         this.id = id;
         this.name = name;
         this.radius = radius;
@@ -62,5 +62,21 @@ public class POI
 
     public void setPoiType(POIType poiType) {
         this.poiType = poiType;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 }
