@@ -3,6 +3,7 @@ package at.sync.controller;
 import at.sync.model.POI;
 import at.sync.model.Schedule;
 import at.sync.model.TransportationRoute;
+import com.noelherrick.jell.Jell;
 import de.topobyte.osm4j.core.access.OsmIterator;
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
@@ -11,6 +12,9 @@ import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -41,6 +45,21 @@ public class OSMSyncController implements ISyncController {
         //      a) deactivate all schedules (set until to route-timestamp - 1day) //TODO: is it correct to decrease 1 day?
         //      b) create new schedule (set from to route-timestamp)
 
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost/fhvgis", "florianmathis", "");
+            Jell jell = new Jell(conn);
+
+            jell.query("")
+
+            /*jell.execute("BEGIN;");
+
+            jell.execute("ROLLBACK;");
+
+            jell.execute("COMMIT;");*/
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         // TODO check if it is current timestamp
         Timestamp now = new Timestamp(new Date().getTime());
@@ -63,14 +82,18 @@ public class OSMSyncController implements ISyncController {
         OsmIterator iterator = new OsmXmlIterator(input, false);
 
 
+        // TODO: at this point lock tables in database?!
+
         // TODO
+        // only get id and extRef?
         // fetch all routes with schedules and their POIs from db
-        // where each schedule validUntil = null
+        // where each schedule validUntil = null and no departure/arrival time
         // create hash map with refId, Route
         HashMap<String, TransportationRoute> dbRoutes = new HashMap<>();
 
 
         // TODO
+        // only get id and extRef?
         // fetch all POIs from db (needed, otherwise we cannot determine, if osm POI is already in db)
         // create hash map with refId, POI
         HashMap<String, POI> dbPois = new HashMap<>();
@@ -119,11 +142,15 @@ public class OSMSyncController implements ISyncController {
                         if ( member.getType() == EntityType.Node ) {
                             POI poi;
                             String nodeRef = String.valueOf(member.getId());
-                            if ( dbPois.containsKey(nodeRef) ) {
+                            if (poisHashMap.containsKey(nodeRef)) {
+                                poi = poisHashMap.get(nodeRef);
+                            } else if ( dbPois.containsKey(nodeRef) ) {
                                 poi = dbPois.get(nodeRef);
+                                poisHashMap.put(nodeRef, poi);
                             } else {
                                 poi = new POI();
                                 poi.setExtRef(nodeRef);
+                                poisHashMap.put(nodeRef, poi);
                             }
 
                             Schedule schedule = new Schedule();
@@ -131,7 +158,6 @@ public class OSMSyncController implements ISyncController {
                             schedule.setPoi(poi);
 
                             routeSchedules.add(schedule);
-                            poisHashMap.put(nodeRef, poi);
 
                             seqNo++;
                         }
@@ -164,15 +190,11 @@ public class OSMSyncController implements ISyncController {
                         }
 
                         // get max tripNo from schedules
-                        transportationRoute.getSchedules().sort(new Comparator<Schedule>() {
-                            @Override
-                            public int compare(Schedule o1, Schedule o2) {
-                                if ( o1.getTripNo() <= o2.getTripNo() ) {
-                                    return -1;
-                                }
-
-                                return 1;
+                        transportationRoute.getSchedules().sort((o1, o2) -> {
+                            if ( o1.getTripNo() <= o2.getTripNo() ) {
+                                return -1;
                             }
+                            return 1;
                         });
                         int maxTripNo = 1;
                         if ( transportationRoute.getSchedules().size() > 0 ) {
@@ -201,14 +223,20 @@ public class OSMSyncController implements ISyncController {
                 String nodeRef = String.valueOf(node.getId());
 
                 // if poi already exists in db -> set id from db
-                POI poi;
-                if ( poisHashMap.containsKey(nodeRef) ) {
-                    poi = poisHashMap.get(nodeRef);
-                } else {
+                if (!poisHashMap.containsKey(nodeRef))
+                    continue;
+
+                POI poi = poisHashMap.get(nodeRef);
+                /*else if (dbPois.containsKey(nodeRef)) {
+                    poi = dbPois.get(nodeRef);
+                    poisHashMap.put(poi.getExtRef(), poi);
+                }
+                else {
                     // poi does not exist in db, create new one
                     poi = new POI();
                     poi.setExtRef(nodeRef);
-                }
+                    poisHashMap.put(poi.getExtRef(), poi);
+                }*/
 
                 // set general data
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(node);
@@ -226,7 +254,18 @@ public class OSMSyncController implements ISyncController {
         for ( TransportationRoute transportationRoute : dbRoutes.values() ) {
             // set inactive
             transportationRoute.setValidUntil(now);
+
+            for ( Schedule schedule : transportationRoute.getSchedules() ) {
+                schedule.setValidUntil(now);
+            }
         }
+
+        // transportationRoutes -> insert/update (active)
+            // schedules -> insert/update (active/inactive)
+        // dbRoutes -> update (inactive)
+            // schedules -> update (inactive)
+        // poisHashMap -> insert/update
+
 
     }
 
