@@ -35,8 +35,8 @@ public class ConnectionManager {
     private static final String DB_URL = "jdbc:postgresql://localhost/fhvgis";
 
     //  Database credentials
-    private static final String USER = "username";
-    private static final String PASS = "password";
+    private static final String USER = "florianmathis";
+    private static final String PASS = "";
 
     private static Connection _connection;
 

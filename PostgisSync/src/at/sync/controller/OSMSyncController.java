@@ -1,6 +1,9 @@
 package at.sync.controller;
 
+import at.sync.dao.POIDAO;
+import at.sync.dao.TransportationRouteDAO;
 import at.sync.model.POI;
+import at.sync.model.POIType;
 import at.sync.model.Schedule;
 import at.sync.model.TransportationRoute;
 import de.topobyte.osm4j.core.access.OsmIterator;
@@ -12,10 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by florianmathis on 05/11/15.
@@ -64,23 +64,25 @@ public class OSMSyncController implements ISyncController {
         }
         OsmIterator iterator = new OsmXmlIterator(input, false);
 
-
         // TODO: at this point lock tables in database?!
 
-        // TODO
-        // only get id and extRef?
+        // TODO only get id and extRef?
         // fetch all routes with schedules and their POIs from db
         // where each schedule validUntil = null and no departure/arrival time
         // create hash map with refId, Route
+        TransportationRouteDAO transportationRouteDAO = new TransportationRouteDAO();
+        List<TransportationRoute> transportationRouteList = transportationRouteDAO.getAllTransportationRoutes();
         HashMap<String, TransportationRoute> dbRoutes = new HashMap<>();
+        for (TransportationRoute i : transportationRouteList) dbRoutes.put(i.getExtRef().toString(), i);
 
 
-        // TODO
-        // only get id and extRef?
+        // TODO only get id and extRef?
         // fetch all POIs from db (needed, otherwise we cannot determine, if osm POI is already in db)
         // create hash map with refId, POI
+        POIDAO poiDAO = new POIDAO();
+        List<POI> poiList = poiDAO.getAllPOIs();
         HashMap<String, POI> dbPois = new HashMap<>();
-
+        for (POI i : poiList) dbPois.put(i.getExtRef().toString(), i);
 
         // loop through data(osm)
         ArrayList<TransportationRoute> transportationRoutes = new ArrayList<>();
@@ -243,13 +245,20 @@ public class OSMSyncController implements ISyncController {
             }
         }
 
-        // transportationRoutes -> insert/update (active)
-        // schedules -> insert/update (active/inactive)
-        // dbRoutes -> update (inactive)
-        // schedules -> update (inactive)
-        // poisHashMap -> insert/update
+        //trans open
+        try {
+            // setAutocommit=false
 
-
+            // transportationRoutes -> insert/update (active)
+            // schedules -> insert/update (active/inactive)
+            // dbRoutes -> update (inactive)
+            // schedules -> update (inactive)
+            // poisHashMap -> insert/update
+        } catch(Exception ex) {
+            // rollback
+        }
+    }
+        //trans commit
     }
 
 }
