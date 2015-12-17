@@ -1,22 +1,23 @@
 package at.sync.model;
+import java.util.UUID;
 
 /**
  * POI - Point of Interest
  * Represents a Building, Station, Place,..
  */
 public class POI {
-    private String id;
-    private String name;
-    private POIType poiType;
-    private double radius;
-    private String extRef;
-    private double latitude;
-    private double longitude;
+    public UUID id;
+    public String name;
+    public POIType poiType;
+    public double radius;
+    public String extRef;
+    public double latitude;
+    public double longitude;
 
     public POI() {
     }
 
-    public POI(String id, String name, double radius, String ext_ref, POIType poiType) {
+    public POI(UUID id, String name, double radius, String ext_ref, POIType poiType) {
         this.id = id;
         this.name = name;
         this.radius = radius;
@@ -24,11 +25,11 @@ public class POI {
         this.poiType = poiType;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

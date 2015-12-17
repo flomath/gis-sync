@@ -1,25 +1,26 @@
 package at.sync.model;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 
 /**
  * Schedule
  */
 public class Schedule {
-    private String id;
-    private int tripNo;
-    private Timestamp validFrom;
-    private Timestamp validUntil;
-    private Timestamp explicitDate;
-    private Timestamp arrivalTime;
-    private Timestamp departureTime;
-    private int seqNo;
-    private POI poi;
+    public UUID id;
+    public int tripNo;
+    public Timestamp validFrom;
+    public Timestamp validUntil;
+    public Timestamp explicitDate;
+    public Timestamp arrivalTime;
+    public Timestamp departureTime;
+    public int seqNo;
+    public POI poi;
 
     public Schedule() {
     }
 
-    public Schedule(String id, int tripNo, Timestamp validFrom, Timestamp validUntil, Timestamp explicitDate, Timestamp arrivalTime, Timestamp departureTime, int seqNo) {
+    public Schedule(UUID id, int tripNo, Timestamp validFrom, Timestamp validUntil, Timestamp explicitDate, Timestamp arrivalTime, Timestamp departureTime, int seqNo) {
         this.id = id;
         this.tripNo = tripNo;
         this.validFrom = validFrom;
@@ -30,11 +31,11 @@ public class Schedule {
         this.seqNo = seqNo;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -1,27 +1,29 @@
 package at.sync.model;
 
+import java.util.UUID;
+
 /**
  * OpenStreetMap types like bus_stop, station,..
  */
 public class POIType {
-    private String id;
-    private String name;
-    private boolean isPrivate;
+    public UUID id;
+    public String name;
+    public boolean isPrivate;
 
     public POIType() {
     }
 
-    public POIType(String id, String name, boolean isPrivate) {
+    public POIType(UUID id, String name, boolean isPrivate) {
         this.id = id;
         this.name = name;
         this.isPrivate = isPrivate;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -1,27 +1,29 @@
 package at.sync.model;
 
+import java.util.UUID;
+
 /**
  * TransportationType of each Waypoint (Walking, by Bus, by Train)
  */
 public class TransportationType {
-    private String id;
-    private String name;
-    private double maxSpeed;
+    public UUID id;
+    public String name;
+    public double maxSpeed;
 
     public TransportationType() {
     }
 
-    public TransportationType(String id, String name, double maxSpeed) {
+    public TransportationType(UUID id, String name, double maxSpeed) {
         this.id = id;
         this.name = name;
         this.maxSpeed = maxSpeed;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

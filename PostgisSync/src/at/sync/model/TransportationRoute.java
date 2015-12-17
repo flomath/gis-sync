@@ -2,29 +2,30 @@ package at.sync.model;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Public transportation route
  */
 public class TransportationRoute {
-    private String id;
-    private String name;
-    private Timestamp validFrom;
-    private Timestamp validUntil;
-    private TransportationType type;
-    private String operator;
-    private String network;
-    private String extRef;
-    private String descriptionFrom;
-    private String descriptionTo;
-    private String description;
-    private String routeNo;
-    private ArrayList<Schedule> schedules = new ArrayList<>();
+    public UUID id;
+    public String name;
+    public Timestamp validFrom;
+    public Timestamp validUntil;
+    public TransportationType type;
+    public String operator;
+    public String network;
+    public String extRef;
+    public String descriptionFrom;
+    public String descriptionTo;
+    public String description;
+    public String routeNo;
+    public ArrayList<Schedule> schedules = new ArrayList<>();
 
     public TransportationRoute() {
     }
 
-    public TransportationRoute(String id, String name, Timestamp validFrom, Timestamp validUntil, TransportationType type, String operator, String network, String extRef, String descriptionFrom, String descriptionTo, String description, String routeNo) {
+    public TransportationRoute(UUID id, String name, Timestamp validFrom, Timestamp validUntil, TransportationType type, String operator, String network, String extRef, String descriptionFrom, String descriptionTo, String description, String routeNo) {
         this.id = id;
         this.name = name;
         this.validFrom = validFrom;
@@ -39,11 +40,11 @@ public class TransportationRoute {
         this.routeNo = routeNo;
     }
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
