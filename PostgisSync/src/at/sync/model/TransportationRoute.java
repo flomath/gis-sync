@@ -8,19 +8,19 @@ import java.util.UUID;
  * Public transportation route
  */
 public class TransportationRoute {
-    public UUID id;
-    public String name;
-    public Timestamp validFrom;
-    public Timestamp validUntil;
-    public TransportationType type;
-    public String operator;
-    public String network;
-    public String extRef;
-    public String descriptionFrom;
-    public String descriptionTo;
-    public String description;
-    public String routeNo;
-    public ArrayList<Schedule> schedules = new ArrayList<>();
+    private UUID id;
+    private String name;
+    private Timestamp validFrom;
+    private Timestamp validUntil;
+    private TransportationType type;
+    private String operator;
+    private String network;
+    private String extRef;
+    private String descriptionFrom;
+    private String descriptionTo;
+    private String description;
+    private String routeNo;
+    private ArrayList<Schedule> schedules = new ArrayList<>();
 
     public TransportationRoute() {
     }

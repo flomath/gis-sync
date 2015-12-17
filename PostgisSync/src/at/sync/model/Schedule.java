@@ -7,15 +7,15 @@ import java.util.UUID;
  * Schedule
  */
 public class Schedule {
-    public UUID id;
-    public int tripNo;
-    public Timestamp validFrom;
-    public Timestamp validUntil;
-    public Timestamp explicitDate;
-    public Timestamp arrivalTime;
-    public Timestamp departureTime;
-    public int seqNo;
-    public POI poi;
+    private UUID id;
+    private int tripNo;
+    private Timestamp validFrom;
+    private Timestamp validUntil;
+    private Timestamp explicitDate;
+    private Timestamp arrivalTime;
+    private Timestamp departureTime;
+    private int seqNo;
+    private POI poi;
 
     public Schedule() {
     }

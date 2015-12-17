@@ -6,9 +6,11 @@ import java.util.UUID;
  * TransportationType of each Waypoint (Walking, by Bus, by Train)
  */
 public class TransportationType {
-    public UUID id;
-    public String name;
-    public double maxSpeed;
+    private UUID id;
+    private String name;
+    private double maxSpeed;
+    private double avgSpeed;
+    private String color;
 
     public TransportationType() {
     }

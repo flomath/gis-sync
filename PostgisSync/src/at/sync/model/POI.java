@@ -6,13 +6,13 @@ import java.util.UUID;
  * Represents a Building, Station, Place,..
  */
 public class POI {
-    public UUID id;
-    public String name;
-    public POIType poiType;
-    public double radius;
-    public String extRef;
-    public double latitude;
-    public double longitude;
+    private UUID id;
+    private String name;
+    private POIType poiType;
+    private double radius;
+    private String extRef;
+    private double latitude;
+    private double longitude;
 
     public POI() {
     }

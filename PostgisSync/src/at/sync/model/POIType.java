@@ -6,9 +6,9 @@ import java.util.UUID;
  * OpenStreetMap types like bus_stop, station,..
  */
 public class POIType {
-    public UUID id;
-    public String name;
-    public boolean isPrivate;
+    private UUID id;
+    private String name;
+    private boolean isPrivate;
 
     public POIType() {
     }
