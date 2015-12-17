@@ -3,7 +3,6 @@ package at.sync.controller;
 import at.sync.model.POI;
 import at.sync.model.Schedule;
 import at.sync.model.TransportationRoute;
-import com.noelherrick.jell.Jell;
 import de.topobyte.osm4j.core.access.OsmIterator;
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
@@ -12,11 +11,11 @@ import de.topobyte.osm4j.xml.dynsax.OsmXmlIterator;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by florianmathis on 05/11/15.
@@ -44,22 +43,6 @@ public class OSMSyncController implements ISyncController {
         // 6. route > same as 5.
         //      a) deactivate all schedules (set until to route-timestamp - 1day) //TODO: is it correct to decrease 1 day?
         //      b) create new schedule (set from to route-timestamp)
-
-        try {
-            Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost/fhvgis", "florianmathis", "");
-            Jell jell = new Jell(conn);
-
-            jell.query("")
-
-            /*jell.execute("BEGIN;");
-
-            jell.execute("ROLLBACK;");
-
-            jell.execute("COMMIT;");*/
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
 
         // TODO check if it is current timestamp
         Timestamp now = new Timestamp(new Date().getTime());
@@ -142,7 +125,7 @@ public class OSMSyncController implements ISyncController {
                         if ( member.getType() == EntityType.Node ) {
                             POI poi;
                             String nodeRef = String.valueOf(member.getId());
-                            if (poisHashMap.containsKey(nodeRef)) {
+                            if ( poisHashMap.containsKey(nodeRef) ) {
                                 poi = poisHashMap.get(nodeRef);
                             } else if ( dbPois.containsKey(nodeRef) ) {
                                 poi = dbPois.get(nodeRef);
@@ -223,7 +206,7 @@ public class OSMSyncController implements ISyncController {
                 String nodeRef = String.valueOf(node.getId());
 
                 // if poi already exists in db -> set id from db
-                if (!poisHashMap.containsKey(nodeRef))
+                if ( !poisHashMap.containsKey(nodeRef) )
                     continue;
 
                 POI poi = poisHashMap.get(nodeRef);
@@ -261,9 +244,9 @@ public class OSMSyncController implements ISyncController {
         }
 
         // transportationRoutes -> insert/update (active)
-            // schedules -> insert/update (active/inactive)
+        // schedules -> insert/update (active/inactive)
         // dbRoutes -> update (inactive)
-            // schedules -> update (inactive)
+        // schedules -> update (inactive)
         // poisHashMap -> insert/update
 
 
