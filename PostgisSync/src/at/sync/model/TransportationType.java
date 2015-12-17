@@ -44,4 +44,20 @@ public class TransportationType {
     public void setMaxSpeed(double maxSpeed) {
         this.maxSpeed = maxSpeed;
     }
+
+    public double getAvgSpeed() {
+        return avgSpeed;
+    }
+
+    public void setAvgSpeed(double avgSpeed) {
+        this.avgSpeed = avgSpeed;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
 }
