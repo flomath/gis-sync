@@ -5,6 +5,7 @@ import at.sync.model.POIType;
 import org.postgresql.geometric.PGpoint;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -76,4 +77,25 @@ public class POITypeDAO {
 
         return poiType;
     }
+
+    /**
+     * Add object (POIType) to prepared statement
+     *
+     * @param ps
+     * @param poiType
+     * @throws SQLException
+     */
+    private void addObjectToStmt(PreparedStatement ps, POIType poiType) throws SQLException {
+        try {
+            ps.setString(1, String.valueOf(poiType.getId() != null ? poiType.getId() : "uuid_generate_v4()"));
+            ps.setString(2, poiType.getName());
+            ps.setBoolean(3, poiType.isPrivate());
+
+            ps.addBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
 }

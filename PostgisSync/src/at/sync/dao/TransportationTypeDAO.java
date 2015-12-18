@@ -1,8 +1,10 @@
 package at.sync.dao;
 
+import at.sync.model.POIType;
 import at.sync.model.TransportationType;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -75,4 +77,27 @@ public class TransportationTypeDAO {
 
         return transportationType;
     }
+
+    /**
+     * Add object (TransportationType) to prepared statement
+     *
+     * @param ps
+     * @param transportationType
+     * @throws SQLException
+     */
+    private void addObjectToStmt(PreparedStatement ps, TransportationType transportationType) throws SQLException {
+        try {
+            ps.setString(1, String.valueOf(transportationType.getId() != null ? transportationType.getId() : "uuid_generate_v4()"));
+            ps.setString(2, transportationType.getName());
+            ps.setDouble(3, transportationType.getMaxSpeed());
+            ps.setDouble(4, transportationType.getAvgSpeed());
+            ps.setString(5, transportationType.getColor());
+
+            ps.addBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
 }

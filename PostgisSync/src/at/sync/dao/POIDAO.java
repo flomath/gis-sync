@@ -44,7 +44,8 @@ public class POIDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, ?, ?)", this.getDbColumns());
+            // TODO (?, ?) or point(?, ?)::geometry ?!
+            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, (?, ?), ?)", this.getDbColumns());
             PreparedStatement ps = conn.prepareStatement(query);
 
             for(POI p : poiList) {
@@ -108,6 +109,7 @@ public class POIDAO {
      * @param resultSet
      * @param poiTypes
      * @return POI
+     * @throws SQLException
      */
     private POI mapSetToObject(ResultSet resultSet, HashMap<String, POIType> poiTypes) throws SQLException {
         POI poi = new POI();
@@ -129,6 +131,30 @@ public class POIDAO {
         }
 
         return poi;
+    }
+
+    /**
+     * Add object (POI) to prepared statement
+     *
+     * @param ps
+     * @param poi
+     * @throws SQLException
+     */
+    private void addObjectToStmt(PreparedStatement ps, POI poi) throws SQLException {
+        try {
+            ps.setString(1, String.valueOf(poi.getId() != null ? poi.getId() : "uuid_generate_v4()"));
+            ps.setString(2, poi.getName());
+            ps.setString(3, poi.getPoiType() != null ? String.valueOf(poi.getPoiType().getId()) : null);
+            ps.setDouble(4, poi.getRadius());
+            ps.setDouble(5, poi.getLatitude());
+            ps.setDouble(6, poi.getLongitude());
+            ps.setString(7, poi.getExtRef());
+
+            ps.addBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 }

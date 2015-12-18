@@ -6,10 +6,7 @@ import at.sync.model.TransportationRoute;
 import at.sync.model.TransportationType;
 import org.postgresql.geometric.PGpoint;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +102,35 @@ public class TransportationRouteDAO {
         }
 
         return transportationRoute;
+    }
+
+    /**
+     * Add object (TransportationRoute) to prepared statement
+     *
+     * @param ps
+     * @param transportationRoute
+     * @throws SQLException
+     */
+    private void addObjectToStmt(PreparedStatement ps, TransportationRoute transportationRoute) throws SQLException {
+        try {
+            ps.setString(1, String.valueOf(transportationRoute.getId() != null ? transportationRoute.getId() : "uuid_generate_v4()"));
+            ps.setString(2, transportationRoute.getName());
+            ps.setTimestamp(3, transportationRoute.getValidFrom());
+            ps.setTimestamp(4, transportationRoute.getValidUntil());
+            ps.setString(5, transportationRoute.getType() != null ? String.valueOf(transportationRoute.getType().getId()) : null);
+            ps.setString(6, transportationRoute.getOperator());
+            ps.setString(7, transportationRoute.getNetwork());
+            ps.setString(8, transportationRoute.getExtRef());
+            ps.setString(9, transportationRoute.getDescriptionFrom());
+            ps.setString(10, transportationRoute.getDescriptionTo());
+            ps.setString(11, transportationRoute.getDescription());
+            ps.setString(12, transportationRoute.getRouteNo());
+
+            ps.addBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 }
