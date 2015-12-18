@@ -64,4 +64,24 @@ public class ConnectionManager {
     }
     //endregion
 
+    public void BeginTransaction() {
+        if (_connection == null) {
+            try {
+                _connection.setAutoCommit(false);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void EndTransaction() {
+        if (_connection == null) {
+            try {
+                _connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

@@ -12,9 +12,10 @@ import java.util.List;
 public class boot {
     public static void main(String[] args) {
 
-        /*OSMSyncController syncController = new OSMSyncController();
-        syncController.startSync();*/
+        OSMSyncController syncController = new OSMSyncController();
+        syncController.startSync();
 
+        // first step: get all types > show mapping view (combobox)
 
     }
 }

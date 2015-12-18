@@ -1,9 +1,9 @@
 package at.sync.controller;
 
+import at.sync.dao.ConnectionManager;
 import at.sync.dao.POIDAO;
 import at.sync.dao.TransportationRouteDAO;
 import at.sync.model.POI;
-import at.sync.model.POIType;
 import at.sync.model.Schedule;
 import at.sync.model.TransportationRoute;
 import de.topobyte.osm4j.core.access.OsmIterator;
@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
- * Created by florianmathis on 05/11/15.
+ * OSM Sync Controller
  */
 public class OSMSyncController implements ISyncController {
 
@@ -27,6 +27,8 @@ public class OSMSyncController implements ISyncController {
      * not fully implemented!
      */
     public void startSync() {
+        this.DebugOut("Begin Synchronization");
+
         // Sync
         // 1. fetch json data from api
         // 2. json to sync.models
@@ -58,7 +60,9 @@ public class OSMSyncController implements ISyncController {
 
         InputStream input = null;
         try {
+            this.DebugOut("Fetch OSM data");
             input = new URL(query).openStream();
+            this.DebugOut("OSM data fetched");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -70,19 +74,27 @@ public class OSMSyncController implements ISyncController {
         // fetch all routes with schedules and their POIs from db
         // where each schedule validUntil = null and no departure/arrival time
         // create hash map with refId, Route
+        this.DebugOut("Load existing TransportationRoutes from database");
         TransportationRouteDAO transportationRouteDAO = new TransportationRouteDAO();
         List<TransportationRoute> transportationRouteList = transportationRouteDAO.getAllTransportationRoutes();
-        HashMap<String, TransportationRoute> dbRoutes = new HashMap<>();
-        for (TransportationRoute i : transportationRouteList) dbRoutes.put(i.getExtRef().toString(), i);
 
+        HashMap<String, TransportationRoute> dbRoutes = new HashMap<>();
+        for (TransportationRoute i : transportationRouteList) {
+            dbRoutes.put(i.getExtRef().toString(), i);
+        }
 
         // TODO only get id and extRef?
         // fetch all POIs from db (needed, otherwise we cannot determine, if osm POI is already in db)
         // create hash map with refId, POI
+        this.DebugOut("Load existing POIs from database");
         POIDAO poiDAO = new POIDAO();
         List<POI> poiList = poiDAO.getAllPOIs();
+
         HashMap<String, POI> dbPois = new HashMap<>();
-        for (POI i : poiList) dbPois.put(i.getExtRef().toString(), i);
+        for (POI i : poiList) {
+            if(i.getExtRef() != null)
+                dbPois.put(i.getExtRef().toString(), i);
+        }
 
         // loop through data(osm)
         ArrayList<TransportationRoute> transportationRoutes = new ArrayList<>();
@@ -131,7 +143,7 @@ public class OSMSyncController implements ISyncController {
                                 poi = poisHashMap.get(nodeRef);
                             } else if ( dbPois.containsKey(nodeRef) ) {
                                 poi = dbPois.get(nodeRef);
-                                poisHashMap.put(nodeRef, poi);
+                                //poisHashMap.put(nodeRef, poi);
                             } else {
                                 poi = new POI();
                                 poi.setExtRef(nodeRef);
@@ -207,21 +219,16 @@ public class OSMSyncController implements ISyncController {
                 OsmNode node = (OsmNode) container.getEntity();
                 String nodeRef = String.valueOf(node.getId());
 
-                // if poi already exists in db -> set id from db
-                if ( !poisHashMap.containsKey(nodeRef) )
-                    continue;
+                POI poi = null;
 
-                POI poi = poisHashMap.get(nodeRef);
-                /*else if (dbPois.containsKey(nodeRef)) {
+                // if poi already exists in db -> set id from db
+                if(dbPois.containsKey(nodeRef)) {
                     poi = dbPois.get(nodeRef);
-                    poisHashMap.put(poi.getExtRef(), poi);
+                } else if(poisHashMap.containsKey(nodeRef)) {
+                    poisHashMap.containsKey(nodeRef);
+                } else {
+                    continue;
                 }
-                else {
-                    // poi does not exist in db, create new one
-                    poi = new POI();
-                    poi.setExtRef(nodeRef);
-                    poisHashMap.put(poi.getExtRef(), poi);
-                }*/
 
                 // set general data
                 Map<String, String> tags = OsmModelUtil.getTagsAsMap(node);
@@ -245,6 +252,38 @@ public class OSMSyncController implements ISyncController {
             }
         }
 
+        // Start Synchronization Step
+        // --------------------------
+
+        ConnectionManager conManager = null;
+        try {
+            conManager = ConnectionManager.getInstance();
+            conManager.BeginTransaction();
+
+            // Insert new POIs into database
+            List<POI> insertPoiList = new ArrayList<POI>(poisHashMap.values());
+            poiDAO.insertPOIs(insertPoiList);
+
+            // Update existing POIs
+            //poiDAO.updatePOIs(dbPois);
+
+            //poisHashMap
+
+            // Commit
+            conManager.getConnection().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if(conManager != null) conManager.getConnection().rollback();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            if(conManager != null) {
+                conManager.EndTransaction();
+            }
+        }
+
         //trans open
         try {
             // setAutocommit=false
@@ -253,12 +292,28 @@ public class OSMSyncController implements ISyncController {
             // schedules -> insert/update (active/inactive)
             // dbRoutes -> update (inactive)
             // schedules -> update (inactive)
-            // poisHashMap -> insert/update
+            // poisHashMap -> insert
+            // dbPois -> update
         } catch(Exception ex) {
             // rollback
         }
-    }
+
         //trans commit
+
+        this.DebugOut("Synchronization ended successfully");
     }
 
+    private long logStartTime = 0;
+
+    /**
+     * Print debug information
+     * @param message
+     */
+    private void DebugOut(String message) {
+        if(logStartTime == 0)
+            logStartTime = System.currentTimeMillis();
+
+        long currentLogTime = System.currentTimeMillis();
+        System.out.println(new Date(currentLogTime) + " Info " + message + ", elapsed time: " + (currentLogTime - logStartTime) + "ms");
+    }
 }
