@@ -5,6 +5,7 @@ import at.sync.model.POIType;
 import org.postgresql.geometric.PGpoint;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -22,6 +23,42 @@ public class POIDAO {
     private static final String radius = "radius";
     private static final String position = "position";
     private static final String extRef = "ext_ref";
+
+    /**
+     * Get all DB Columns
+     *
+     * @return String
+     */
+    private String getDbColumns() {
+        return String.format("%s, %s, %s, %s, %s, %s", id, name, poiTypeID, radius, position, extRef);
+    }
+
+    /**
+     * Insert POIs
+     *
+     * @param poiList
+     * @throws Exception
+     */
+    public void insertPOIs(List<POI> poiList) throws Exception {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getInstance().getConnection();
+
+            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, ?, ?)", this.getDbColumns());
+            PreparedStatement ps = conn.prepareStatement(query);
+
+            for(POI p : poiList) {
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+        }
+    }
 
     /**
      * Get all POIs
@@ -81,8 +118,7 @@ public class POIDAO {
             poi.setPoiType(poiTypes.get(resultSet.getString(poiTypeID)));
             poi.setRadius(resultSet.getDouble(radius));
             poi.setExtRef(resultSet.getString(extRef));
-            //TODO: check if this is working
-            PGpoint point = resultSet.getObject(position, PGpoint.class);
+            PGpoint point = (PGpoint)resultSet.getObject(position);
             if (point != null) {
                 poi.setLatitude(point.x);
                 poi.setLongitude(point.y);
