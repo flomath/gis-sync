@@ -2,6 +2,7 @@ package at.sync.dao;
 
 import at.sync.model.POI;
 import at.sync.model.POIType;
+import org.postgresql.geometric.PGpoint;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -45,17 +46,7 @@ public class POIDAO {
             result = conn.createStatement().executeQuery(query);
 
             while(result.next()){
-                POI poi = new POI();
-
-                poi.setId(UUID.fromString(result.getString(id)));
-                poi.setName(result.getString(name));
-                poi.setExtRef(result.getString(extRef));
-                poi.setRadius(result.getDouble(radius));
-
-                POIType poiType = poiTypes.get(result.getString(poiTypeID));
-                poi.setPoiType(poiType);
-
-                pois.add(poi);
+                pois.add(mapSetToObject(result, poiTypes));
             }
 
         } catch (Exception e) {
@@ -72,6 +63,36 @@ public class POIDAO {
 
 
         return pois;
+    }
+
+    /**
+     * Map a result set to an object (POI)
+     *
+     * @param resultSet
+     * @param poiTypes
+     * @return POI
+     */
+    private POI mapSetToObject(ResultSet resultSet, HashMap<String, POIType> poiTypes) throws SQLException {
+        POI poi = new POI();
+
+        try {
+            poi.setId(UUID.fromString(resultSet.getString(id)));
+            poi.setName(resultSet.getString(name));
+            poi.setPoiType(poiTypes.get(resultSet.getString(poiTypeID)));
+            poi.setRadius(resultSet.getDouble(radius));
+            poi.setExtRef(resultSet.getString(extRef));
+            //TODO: check if this is working
+            PGpoint point = resultSet.getObject(position, PGpoint.class);
+            if (point != null) {
+                poi.setLatitude(point.x);
+                poi.setLongitude(point.y);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return poi;
     }
 
 }

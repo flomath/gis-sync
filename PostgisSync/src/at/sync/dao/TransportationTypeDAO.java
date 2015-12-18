@@ -17,7 +17,7 @@ public class TransportationTypeDAO {
     private static final String id = "id";
     private static final String name = "name";
     private static final String maxSpeed = "max_speed";
-    private static final String averageSpeed = "average_speed";
+    private static final String avgSpeed = "average_speed";
     private static final String color = "color";
 
     /**
@@ -32,19 +32,11 @@ public class TransportationTypeDAO {
         try {
             Connection conn = ConnectionManager.getInstance().getConnection();
 
-            String query = "Select * from transportation_type";
+            String query = "Select * from transportation";
             result = conn.createStatement().executeQuery(query);
 
             while(result.next()){
-                TransportationType transportationType = new TransportationType();
-
-                transportationType.setId(UUID.fromString(result.getString(id)));
-                transportationType.setName(result.getString(name));
-                transportationType.setMaxSpeed(result.getDouble(maxSpeed));
-                transportationType.setAvgSpeed(result.getDouble(averageSpeed));
-                transportationType.setColor(result.getString(color));
-
-                transportationTypeList.add(transportationType);
+                transportationTypeList.add(mapSetToObject(result));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,5 +51,28 @@ public class TransportationTypeDAO {
         }
 
         return transportationTypeList;
+    }
+
+    /**
+     * Map a result set to an object (TransportationType)
+     *
+     * @param resultSet
+     * @return TransportationType
+     */
+    private TransportationType mapSetToObject(ResultSet resultSet) throws SQLException {
+        TransportationType transportationType = new TransportationType();
+
+        try {
+            transportationType.setId(UUID.fromString(resultSet.getString(id)));
+            transportationType.setName(resultSet.getString(name));
+            transportationType.setMaxSpeed(resultSet.getDouble(maxSpeed));
+            transportationType.setAvgSpeed(resultSet.getDouble(avgSpeed));
+            transportationType.setColor(resultSet.getString(color));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return transportationType;
     }
 }

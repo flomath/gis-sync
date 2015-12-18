@@ -1,11 +1,14 @@
 package at.sync.dao;
 
+import at.sync.model.POI;
 import at.sync.model.POIType;
+import org.postgresql.geometric.PGpoint;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +23,7 @@ public class POITypeDAO {
     private static final String isPrivate = "private";
 
     /**
-     * Get all POITypess
+     * Get all POITypes
      *
      * @return List
      */
@@ -35,13 +38,7 @@ public class POITypeDAO {
             result = conn.createStatement().executeQuery(query);
 
             while(result.next()){
-                POIType poiType = new POIType();
-
-                poiType.setId(UUID.fromString(result.getString(id)));
-                poiType.setName(result.getString(name));
-                poiType.setIsPrivate(result.getBoolean(isPrivate));
-
-                poiTypeList.add(poiType);
+                poiTypeList.add(mapSetToObject(result));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,5 +54,26 @@ public class POITypeDAO {
         }
 
         return poiTypeList;
+    }
+
+    /**
+     * Map a result set to an object (POIType)
+     *
+     * @param resultSet
+     * @return POIType
+     */
+    private POIType mapSetToObject(ResultSet resultSet) throws SQLException {
+        POIType poiType = new POIType();
+
+        try {
+            poiType.setId(UUID.fromString(resultSet.getString(id)));
+            poiType.setName(resultSet.getString(name));
+            poiType.setIsPrivate(resultSet.getBoolean(isPrivate));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return poiType;
     }
 }

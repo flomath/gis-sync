@@ -4,10 +4,12 @@ import at.sync.model.POI;
 import at.sync.model.POIType;
 import at.sync.model.TransportationRoute;
 import at.sync.model.TransportationType;
+import org.postgresql.geometric.PGpoint;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,15 +57,7 @@ public class TransportationRouteDAO {
             result = conn.createStatement().executeQuery(query);
 
             while (result.next()) {
-                TransportationRoute transportationRoute = new TransportationRoute();
-
-                transportationRoute.setId(UUID.fromString(result.getString(id)));
-                transportationRoute.setName(result.getString(name));
-                transportationRoute.setExtRef(result.getString(extRef));
-
-                transportationRoute.setType(transportationTypes.get(result.getString(transportationID)));
-
-                transportationRoutes.add(transportationRoute);
+                transportationRoutes.add(mapSetToObject(result, transportationTypes));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,6 +74,37 @@ public class TransportationRouteDAO {
 
 
         return transportationRoutes;
+    }
+
+    /**
+     * Map a result set to an object (TransportationRoute)
+     *
+     * @param resultSet
+     * @param transportationTypes
+     * @return TransportationRoute
+     */
+    private TransportationRoute mapSetToObject(ResultSet resultSet, HashMap<String, TransportationType> transportationTypes) throws SQLException {
+        TransportationRoute transportationRoute = new TransportationRoute();
+
+        try {
+            transportationRoute.setId(UUID.fromString(resultSet.getString(id)));
+            transportationRoute.setName(resultSet.getString(name));
+            transportationRoute.setValidFrom(resultSet.getTimestamp(validFrom));
+            transportationRoute.setValidUntil(resultSet.getTimestamp(validUntil));
+            transportationRoute.setType(transportationTypes.get(resultSet.getString(transportationID)));
+            transportationRoute.setOperator(resultSet.getString(operator));
+            transportationRoute.setNetwork(resultSet.getString(network));
+            transportationRoute.setExtRef(resultSet.getString(extRef));
+            transportationRoute.setDescriptionFrom(resultSet.getString(descriptionFrom));
+            transportationRoute.setDescriptionTo(resultSet.getString(descriptionTo));
+            transportationRoute.setDescription(resultSet.getString(description));
+            transportationRoute.setRouteNo(resultSet.getString(routeNo));
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        return transportationRoute;
     }
 
 }
