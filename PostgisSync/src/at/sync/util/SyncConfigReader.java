@@ -1,6 +1,7 @@
 package at.sync.util;
 
 import javax.json.JsonObject;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,7 +30,8 @@ public class SyncConfigReader {
                 Set<String> keys = poi_types.keySet();
 
                 for (String key : keys) {
-                    poiTypes.put(key, poi_types.get(key).toString());
+                    JsonString idValue = (JsonString) poi_types.get(key);
+                    poiTypes.put(key, idValue.getString());
                 }
             } catch (Exception e) {
                 // no poi_types available
@@ -54,7 +56,8 @@ public class SyncConfigReader {
                 Set<String> keys = transportation_types.keySet();
 
                 for (String key : keys) {
-                    transportationTypes.put(key, transportation_types.get(key).toString());
+                    JsonString idValue = (JsonString) transportation_types.get(key);
+                    transportationTypes.put(key, idValue.getString());
                 }
             } catch (Exception e) {
                 // no transportation_types available
