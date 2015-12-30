@@ -44,16 +44,17 @@ public class FileReaderUtility {
      *
      * @param url
      * @param jsonObject
+     * @throws Exception
      */
-    public static void writeJSON(String url, JsonObject jsonObject) {
+    public static void writeJSON(String url, JsonObject jsonObject) throws Exception {
         try {
             String path = new File("").getAbsolutePath() + url;
             JsonWriter writer = Json.createWriter(new FileWriter(path));
 
             writer.writeObject(jsonObject);
             writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw e;
         }
     }
 }

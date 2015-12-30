@@ -78,8 +78,9 @@ public class SyncConfigReader {
      * Write given POI types to config file
      *
      * @param poiTypes
+     * @throws Exception
      */
-    public static void addPOITypes(HashMap<String, String> poiTypes) {
+    public static void addPOITypes(HashMap<String, String> poiTypes) throws Exception {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         for ( String key : poiTypes.keySet() ) {
             objectBuilder.add(key, poiTypes.get(key));
@@ -95,8 +96,9 @@ public class SyncConfigReader {
      * Write given transportation types to config file
      *
      * @param transportationTypes
+     * @throws Exception
      */
-    public static void addTransportationTypes(HashMap<String, String> transportationTypes) {
+    public static void addTransportationTypes(HashMap<String, String> transportationTypes) throws Exception {
         JsonObjectBuilder objectBuilder = Json.createObjectBuilder();
         for ( String key : transportationTypes.keySet() ) {
             objectBuilder.add(key, transportationTypes.get(key));
