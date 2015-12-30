@@ -1,0 +1,9 @@
+{
+  "poi_types": {
+    "bus_stop": "91919191-12341234",
+    "bus_asdf": "asdfasdf"
+  },
+  "transportation_types": {
+    "train": "91239412934-12341234"
+  }
+}
