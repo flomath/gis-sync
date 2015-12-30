@@ -5,7 +5,7 @@ import java.util.UUID;
  * POI - Point of Interest
  * Represents a Building, Station, Place,..
  */
-public class POI {
+public class POI extends Entity {
     private UUID id;
     private String name;
     private POIType poiType;

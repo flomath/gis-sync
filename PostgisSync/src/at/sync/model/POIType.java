@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * OpenStreetMap types like bus_stop, station,..
  */
-public class POIType {
+public class POIType extends Entity {
     private UUID id;
     private String name;
     private boolean isPrivate;

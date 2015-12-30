@@ -2,6 +2,7 @@ package at.sync.dao;
 
 import at.sync.model.POIType;
 import at.sync.model.TransportationType;
+import org.postgresql.util.PGobject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,8 +20,45 @@ public class TransportationTypeDAO {
     private static final String id = "id";
     private static final String name = "name";
     private static final String maxSpeed = "max_speed";
-    private static final String avgSpeed = "average_speed";
+    private static final String avgSpeed = "avarage_speed";
     private static final String color = "color";
+
+    /**
+     * Get all DB Columns
+     *
+     * @return String
+     */
+    private String getDbColumns() {
+        return String.format("%s, %s, %s, %s, %s", id, name, maxSpeed, avgSpeed, color);
+    }
+
+    /**
+     * Insert TransportationTypes
+     *
+     * @param transportationTypeList
+     * @throws Exception
+     */
+    public void insertTransportationTypes(List<TransportationType> transportationTypeList) throws Exception {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getInstance().getConnection();
+
+            String query = String.format("INSERT INTO transportation (%s) values (?, ?, ?, ?, ?)", this.getDbColumns());
+            PreparedStatement ps = conn.prepareStatement(query);
+
+            for(TransportationType transportationType : transportationTypeList) {
+                addObjectToStmt(ps, transportationType);
+            }
+
+            ps.executeBatch();
+            ps.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+        }
+    }
+
 
     /**
      * Get all TransportationTypes
@@ -87,7 +125,15 @@ public class TransportationTypeDAO {
      */
     private void addObjectToStmt(PreparedStatement ps, TransportationType transportationType) throws SQLException {
         try {
-            ps.setString(1, String.valueOf(transportationType.getId() != null ? transportationType.getId() : "uuid_generate_v4()"));
+            PGobject toInsertUUID = new PGobject();
+            toInsertUUID.setType("uuid");
+            if(transportationType.getId() == null) {
+                transportationType.setId(UUID.randomUUID());
+            }
+
+            toInsertUUID.setValue(String.valueOf(transportationType.getId()));
+
+            ps.setObject(1, toInsertUUID);
             ps.setString(2, transportationType.getName());
             ps.setDouble(3, transportationType.getMaxSpeed());
             ps.setDouble(4, transportationType.getAvgSpeed());

@@ -45,12 +45,67 @@ public class POIDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            // TODO (?, ?) or point(?, ?)::geometry ?!
-            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, (?, ?), ?)", this.getDbColumns());
+            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, point(?, ?), ?)", this.getDbColumns());
             PreparedStatement ps = conn.prepareStatement(query);
 
-            for(POI p : poiList) {
-                addObjectToStmt(ps, p);
+            for(POI poi : poiList) {
+                if(poi.getId() == null) {
+                    PGobject toInsertUUID = new PGobject();
+                    toInsertUUID.setType("uuid");
+                    if(poi.getId() == null) {
+                        poi.setId(UUID.randomUUID());
+                    }
+
+                    toInsertUUID.setValue(String.valueOf(poi.getId()));
+
+                    ps.setObject(1, toInsertUUID);
+                    ps.setString(2, poi.getName());
+                    ps.setObject(3, poi.getPoiType() != null ? poi.getPoiType().getId() : null);
+                    ps.setDouble(4, poi.getRadius());
+                    ps.setDouble(5, poi.getLatitude());
+                    ps.setDouble(6, poi.getLongitude());
+                    ps.setString(7, poi.getExtRef());
+
+                    ps.addBatch();
+                }
+            }
+
+            ps.executeBatch();
+            ps.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+        }
+    }
+
+    /**
+     * Update POIs
+     *
+     * @param poiList
+     * @throws Exception
+     */
+    public void updatePOIs(List<POI> poiList) throws Exception {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getInstance().getConnection();
+
+            String query = "UPDATE poi SET name=?, poi_type_id=?, radius=?, position=point(?,?), ext_ref=? where id=?";
+            PreparedStatement ps = conn.prepareStatement(query);
+
+            for(POI poi : poiList) {
+                if(poi.getId() == null)
+                    continue;
+
+                ps.setString(1, poi.getName());
+                ps.setObject(2, poi.getPoiType() != null ? poi.getPoiType().getId() : null);
+                ps.setDouble(3, poi.getRadius());
+                ps.setDouble(4, poi.getLatitude());
+                ps.setDouble(5, poi.getLongitude());
+                ps.setString(6, poi.getExtRef());
+                ps.setObject(7, poi.getId());
+
+                ps.addBatch();
             }
 
             ps.executeBatch();
@@ -132,39 +187,6 @@ public class POIDAO {
         }
 
         return poi;
-    }
-
-    /**
-     * Add object (POI) to prepared statement
-     *
-     * @param ps
-     * @param poi
-     * @throws SQLException
-     */
-    private void addObjectToStmt(PreparedStatement ps, POI poi) throws SQLException {
-        try {
-
-            PGobject toInsertUUID = new PGobject();
-            toInsertUUID.setType("uuid");
-            if(poi.getId() == null) {
-                poi.setId(UUID.randomUUID());
-            }
-
-            toInsertUUID.setValue(String.valueOf(poi.getId()));
-
-            ps.setObject(1, toInsertUUID);
-            ps.setString(2, poi.getName());
-            ps.setObject(3, poi.getPoiType() != null ? poi.getPoiType().getId() : null);
-            ps.setDouble(4, poi.getRadius());
-            ps.setDouble(5, poi.getLatitude());
-            ps.setDouble(6, poi.getLongitude());
-            ps.setString(7, poi.getExtRef());
-
-            ps.addBatch();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        }
     }
 
 }

@@ -5,6 +5,7 @@ import at.sync.model.POIType;
 import at.sync.model.TransportationRoute;
 import at.sync.model.TransportationType;
 import org.postgresql.geometric.PGpoint;
+import org.postgresql.util.PGobject;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -32,6 +33,64 @@ public class TransportationRouteDAO {
     private static final String description = "desc";
     private static final String routeNo = "route_no";
 
+    /**
+     * Get all DB Columns
+     *
+     * @return String
+     */
+    private String getDbColumns() {
+        return String.format("%s,%s,%s,%s,%s,%s,%s,%s,\"%s\",%s,%s,%s", id, name, validFrom, validUntil, transportationID, operator, network, extRef, description, descriptionFrom, descriptionTo, routeNo);
+    }
+
+    /**
+     * Insert POIs
+     *
+     * @param transportationRouteList
+     * @throws Exception
+     */
+    public void insertTransportationRoutes(List<TransportationRoute> transportationRouteList) throws Exception {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getInstance().getConnection();
+
+            String query = String.format("INSERT INTO transportation_route (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", getDbColumns());
+            PreparedStatement ps = conn.prepareStatement(query);
+
+            for(TransportationRoute transportationRoute : transportationRouteList) {
+                if(transportationRoute.getId() == null) {
+                    PGobject toInsertUUID = new PGobject();
+                    toInsertUUID.setType("uuid");
+                    if(transportationRoute.getId() == null) {
+                        transportationRoute.setId(UUID.randomUUID());
+                    }
+
+                    toInsertUUID.setValue(String.valueOf(transportationRoute.getId()));
+
+                    ps.setObject(1, toInsertUUID);
+                    ps.setString(2, transportationRoute.getName());
+                    ps.setTimestamp(3, transportationRoute.getValidFrom());
+                    ps.setTimestamp(4, transportationRoute.getValidUntil());
+                    ps.setObject(5, transportationRoute.getType() != null ? transportationRoute.getType().getId() : null);
+                    ps.setString(6, transportationRoute.getOperator());
+                    ps.setString(7, transportationRoute.getNetwork());
+                    ps.setString(8, transportationRoute.getExtRef());
+                    ps.setString(9, transportationRoute.getDescription());
+                    ps.setString(10, transportationRoute.getDescriptionFrom());
+                    ps.setString(11, transportationRoute.getDescriptionTo());
+                    ps.setString(12, transportationRoute.getRouteNo());
+
+                    ps.addBatch();
+                }
+            }
+
+            ps.executeBatch();
+            ps.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+        }
+    }
     /**
      * Get all TransportationRoutes
      *

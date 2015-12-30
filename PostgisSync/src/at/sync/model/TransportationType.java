@@ -5,7 +5,7 @@ import java.util.UUID;
 /**
  * TransportationType of each Waypoint (Walking, by Bus, by Train)
  */
-public class TransportationType {
+public class TransportationType extends Entity {
     private UUID id;
     private String name;
     private double maxSpeed;

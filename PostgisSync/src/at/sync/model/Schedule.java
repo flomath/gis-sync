@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * Schedule
  */
-public class Schedule {
+public class Schedule extends Entity {
     private UUID id;
     private int tripNo;
     private Timestamp validFrom;

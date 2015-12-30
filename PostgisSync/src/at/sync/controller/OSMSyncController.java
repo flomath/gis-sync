@@ -1,13 +1,9 @@
 package at.sync.controller;
 
-import at.sync.dao.ConnectionManager;
-import at.sync.dao.POIDAO;
-import at.sync.dao.POITypeDAO;
-import at.sync.dao.TransportationRouteDAO;
-import at.sync.model.POI;
-import at.sync.model.POIType;
-import at.sync.model.Schedule;
-import at.sync.model.TransportationRoute;
+import at.sync.dao.*;
+import at.sync.model.*;
+import at.sync.util.SyncConfigReader;
+import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import de.topobyte.osm4j.core.access.OsmIterator;
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;
@@ -28,7 +24,7 @@ public class OSMSyncController implements ISyncController {
      * TODO: not tested yet!
      * not fully implemented!
      */
-    public void startSync() {
+    public void startSync() throws Exception {
         this.DebugOut("Begin Synchronization");
 
         // Sync
@@ -75,8 +71,43 @@ public class OSMSyncController implements ISyncController {
         // Load all POI-Types from db
         // Load all POI-Types from config file
         // loop through config poi types and check if id is in db -> if not remove from list/config file
+
+        // XX93 - "Bushaltestelle"
         POITypeDAO poiTypeDAO = new POITypeDAO();
-        List<POIType> poiTypesDb = poiTypeDAO.getAllPOITypes();
+        HashMap<String, POIType> dbPoiTypes = new HashMap<>();
+        for (POIType p : poiTypeDAO.getAllPOITypes()) {
+            dbPoiTypes.put(p.getId().toString(), p);
+        }
+
+        // "bus_stop" - "XX93"
+        HashMap<String, String> poiTypesFile = SyncConfigReader.getPOITypes();
+        Iterator it = poiTypesFile.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+
+            if(!dbPoiTypes.containsKey(pair.getValue())) {
+                it.remove();
+            }
+        }
+
+        // Sync TransportationTypes with File-Mapping
+        TransportationTypeDAO transportationTypeDAO = new TransportationTypeDAO();
+
+        HashMap<String, TransportationType> dbTransportationTypes = new HashMap<>();
+        for(TransportationType t : transportationTypeDAO.getAllTransportationTypes()) {
+            dbTransportationTypes.put(t.getId().toString(), t);
+        }
+
+        HashMap<String, String> transportationTypesFile = SyncConfigReader.getTransportationTypes();
+        Iterator itTransp = transportationTypesFile.entrySet().iterator();
+        while (itTransp.hasNext()) {
+            Map.Entry pair = (Map.Entry) itTransp.next();
+
+            if(!dbTransportationTypes.containsKey(pair.getValue())) {
+                itTransp.remove();
+            }
+        }
+
 
         // TODO only get id and extRef?
         // fetch all routes with schedules and their POIs from db
@@ -136,8 +167,21 @@ public class OSMSyncController implements ISyncController {
                     transportationRoute.setNetwork(tags.get("network"));
                     transportationRoute.setOperator(tags.get("operator"));
                     transportationRoute.setRouteNo(tags.get("ref"));
-                    // TODO set route type
-                    // transportationRoute.setType();
+
+                    // Set TransportationRoute-Type
+                    String osmTransportationType = tags.get("route");
+                    if (transportationTypesFile.containsKey(osmTransportationType)) {
+                        String id = transportationTypesFile.get(osmTransportationType);
+                        transportationRoute.setType(dbTransportationTypes.get(id));
+                    } else {
+                        TransportationType transportationType = new TransportationType();
+                        transportationType.setId(UUID.randomUUID());
+                        transportationType.setIsDirty(true);
+                        transportationType.setName(osmTransportationType);
+                        transportationTypesFile.put(transportationType.getName(), transportationType.getId().toString());
+                        dbTransportationTypes.put(transportationType.getId().toString(), transportationType);
+                        transportationRoute.setType(transportationType);
+                    }
 
                     // loop through members (osm) -> POIs
                     // save all POIs in temporary list
@@ -243,14 +287,48 @@ public class OSMSyncController implements ISyncController {
                 poi.setName(tags.get("name"));
                 poi.setLatitude(node.getLatitude());
                 poi.setLongitude(node.getLongitude());
-                //poi.setPoiType();
                 //poi.setRadius();
 
-                //TODO set poi type
-                // !configFilePoiTypes.exist(tags.get("type"))
-                // poiType = new PoiType("typeName");
-                // add new poi type to configFilePoiTypes
-                // if no poi type found > exit!
+                // Get POIType basend on various decisions
+                String osmPoiType = "";
+                if(tags.containsKey("amenity") && tags.get("amenity").equals("bus_station")) {
+                    osmPoiType = "bus_station";
+                } else if(tags.containsKey("highway") && tags.get("highway").equals("bus_stop")) {
+                    osmPoiType = "bus_stop";
+                } else {
+                    if(tags.containsKey("public_transport") && tags.get("public_transport").equals("stop_position")) {
+                        if(tags.containsKey("train") && tags.get("train").equals("yes")) {
+                            osmPoiType = "halt"; // train halt
+                        } else if(tags.containsKey("railway")) {
+                            osmPoiType = "halt"; // train halt
+                        } else if(tags.containsKey("bus") && tags.get("bus").equals("yes")) {
+                            osmPoiType = "bus_stop";
+                        }
+                    } else if(tags.containsKey("public_transport") && tags.get("public_transport").equals("platform")) {
+                        if(tags.containsKey("railway") && tags.get("railway").equals("platform")) {
+                            osmPoiType = "train_station";
+                        }
+                    }
+                }
+
+                if(osmPoiType == "") {
+                    throw new Exception("Could not find POI-Type!");
+                    // Couldn't find the proper POI-Type!!
+                }
+
+                // Set POIType
+                if (poiTypesFile.containsKey(osmPoiType)) {
+                    String id = poiTypesFile.get(osmPoiType);
+                    poi.setPoiType(dbPoiTypes.get(id));
+                } else {
+                    POIType poiType = new POIType();
+                    poiType.setId(UUID.randomUUID());
+                    poiType.setIsDirty(true);
+                    poiType.setName(osmPoiType);
+                    poiTypesFile.put(poiType.getName(), poiType.getId().toString());
+                    dbPoiTypes.put(poiType.getId().toString(), poiType);
+                    poi.setPoiType(poiType);
+                }
             }
         }
 
@@ -273,18 +351,42 @@ public class OSMSyncController implements ISyncController {
             conManager = ConnectionManager.getInstance();
             conManager.BeginTransaction();
 
-            // Insert/Update all PoiTypes
-            // add all with ID = null in db
-            // add to config file
+            // Insert all PoiTypes with IsDirtyFlag
+            List<POIType> poiTypesToAdd = new ArrayList<>();
+            for(POIType p : dbPoiTypes.values()) {
+                if(p.isDirty()) {
+                    poiTypesToAdd.add(p);
+                }
+            }
+            poiTypeDAO.insertPoiTypes(poiTypesToAdd);
 
             // Insert new POIs into database
-            List<POI> insertPoiList = new ArrayList<POI>(poisHashMap.values());
+            List<POI> insertPoiList = new ArrayList<>(poisHashMap.values());
             poiDAO.insertPOIs(insertPoiList);
 
             // Update existing POIs
-            //poiDAO.updatePOIs(dbPois);
+            poiDAO.updatePOIs(new ArrayList<>(poisHashMap.values()));
 
-            //poisHashMap
+
+
+            // Insert TransportationTypes with IsDirtyFlag
+            List<TransportationType> transportationTypesToAdd = new ArrayList<>();
+            for(TransportationType transportationType : dbTransportationTypes.values()) {
+                if(transportationType.isDirty()) {
+                    transportationTypesToAdd.add(transportationType);
+                }
+            }
+            transportationTypeDAO.insertTransportationTypes(transportationTypesToAdd);
+
+            // Add Transportation Routes
+            transportationRouteDAO.insertTransportationRoutes(transportationRoutes);
+
+
+            // Write PoiType-Mapping to File
+            SyncConfigReader.addPOITypes(poiTypesFile);
+
+            // Write TransportationType-Mapping to File
+            SyncConfigReader.addTransportationTypes(transportationTypesFile);
 
             // Commit
             conManager.getConnection().commit();

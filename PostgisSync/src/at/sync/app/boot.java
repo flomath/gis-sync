@@ -13,7 +13,11 @@ public class boot {
     public static void main(String[] args) {
 
         OSMSyncController syncController = new OSMSyncController();
-        syncController.startSync();
+        try {
+            syncController.startSync();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // first step: get all types > show mapping view (combobox)
 

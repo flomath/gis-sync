@@ -7,7 +7,7 @@ import java.util.UUID;
 /**
  * Public transportation route
  */
-public class TransportationRoute {
+public class TransportationRoute extends Entity {
     private UUID id;
     private String name;
     private Timestamp validFrom;

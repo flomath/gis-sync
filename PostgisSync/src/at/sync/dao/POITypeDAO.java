@@ -3,6 +3,7 @@ package at.sync.dao;
 import at.sync.model.POI;
 import at.sync.model.POIType;
 import org.postgresql.geometric.PGpoint;
+import org.postgresql.util.PGobject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +23,42 @@ public class POITypeDAO {
     private static final String id = "id";
     private static final String name = "name";
     private static final String isPrivate = "private";
+
+    /**
+     * Get all DB Columns
+     *
+     * @return String
+     */
+    private String getDbColumns() {
+        return String.format("%s, %s, %s", id, name, isPrivate);
+    }
+
+    /**
+     * Insert PoiTypes
+     *
+     * @param poiTypeList
+     * @throws Exception
+     */
+    public void insertPoiTypes(List<POIType> poiTypeList) throws Exception {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getInstance().getConnection();
+
+            String query = String.format("INSERT INTO poi_type (%s) values (?, ?, ?)", this.getDbColumns());
+            PreparedStatement ps = conn.prepareStatement(query);
+
+            for(POIType p : poiTypeList) {
+                addObjectToStmt(ps, p);
+            }
+
+            ps.executeBatch();
+            ps.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+        }
+    }
 
     /**
      * Get all POITypes
@@ -87,7 +124,15 @@ public class POITypeDAO {
      */
     private void addObjectToStmt(PreparedStatement ps, POIType poiType) throws SQLException {
         try {
-            ps.setString(1, String.valueOf(poiType.getId() != null ? poiType.getId() : "uuid_generate_v4()"));
+            PGobject toInsertUUID = new PGobject();
+            toInsertUUID.setType("uuid");
+            if(poiType.getId() == null) {
+                poiType.setId(UUID.randomUUID());
+            }
+
+            toInsertUUID.setValue(String.valueOf(poiType.getId()));
+
+            ps.setObject(1, toInsertUUID);
             ps.setString(2, poiType.getName());
             ps.setBoolean(3, poiType.isPrivate());
 
