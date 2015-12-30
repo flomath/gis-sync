@@ -3,6 +3,7 @@ package at.sync.dao;
 import at.sync.model.POI;
 import at.sync.model.POIType;
 import org.postgresql.geometric.PGpoint;
+import org.postgresql.util.PGobject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,7 +50,7 @@ public class POIDAO {
             PreparedStatement ps = conn.prepareStatement(query);
 
             for(POI p : poiList) {
-                ps.addBatch();
+                addObjectToStmt(ps, p);
             }
 
             ps.executeBatch();
@@ -142,9 +143,18 @@ public class POIDAO {
      */
     private void addObjectToStmt(PreparedStatement ps, POI poi) throws SQLException {
         try {
-            ps.setString(1, String.valueOf(poi.getId() != null ? poi.getId() : "uuid_generate_v4()"));
+
+            PGobject toInsertUUID = new PGobject();
+            toInsertUUID.setType("uuid");
+            if(poi.getId() == null) {
+                poi.setId(UUID.randomUUID());
+            }
+
+            toInsertUUID.setValue(String.valueOf(poi.getId()));
+
+            ps.setObject(1, toInsertUUID);
             ps.setString(2, poi.getName());
-            ps.setString(3, poi.getPoiType() != null ? String.valueOf(poi.getPoiType().getId()) : null);
+            ps.setObject(3, poi.getPoiType() != null ? poi.getPoiType().getId() : null);
             ps.setDouble(4, poi.getRadius());
             ps.setDouble(5, poi.getLatitude());
             ps.setDouble(6, poi.getLongitude());

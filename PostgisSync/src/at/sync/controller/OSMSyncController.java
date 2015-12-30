@@ -2,8 +2,10 @@ package at.sync.controller;
 
 import at.sync.dao.ConnectionManager;
 import at.sync.dao.POIDAO;
+import at.sync.dao.POITypeDAO;
 import at.sync.dao.TransportationRouteDAO;
 import at.sync.model.POI;
+import at.sync.model.POIType;
 import at.sync.model.Schedule;
 import at.sync.model.TransportationRoute;
 import de.topobyte.osm4j.core.access.OsmIterator;
@@ -69,6 +71,12 @@ public class OSMSyncController implements ISyncController {
         OsmIterator iterator = new OsmXmlIterator(input, false);
 
         // TODO: at this point lock tables in database?!
+
+        // Load all POI-Types from db
+        // Load all POI-Types from config file
+        // loop through config poi types and check if id is in db -> if not remove from list/config file
+        POITypeDAO poiTypeDAO = new POITypeDAO();
+        List<POIType> poiTypesDb = poiTypeDAO.getAllPOITypes();
 
         // TODO only get id and extRef?
         // fetch all routes with schedules and their POIs from db
@@ -225,7 +233,7 @@ public class OSMSyncController implements ISyncController {
                 if(dbPois.containsKey(nodeRef)) {
                     poi = dbPois.get(nodeRef);
                 } else if(poisHashMap.containsKey(nodeRef)) {
-                    poisHashMap.containsKey(nodeRef);
+                    poi = poisHashMap.get(nodeRef);
                 } else {
                     continue;
                 }
@@ -235,9 +243,14 @@ public class OSMSyncController implements ISyncController {
                 poi.setName(tags.get("name"));
                 poi.setLatitude(node.getLatitude());
                 poi.setLongitude(node.getLongitude());
-                //TODO set poi type
                 //poi.setPoiType();
                 //poi.setRadius();
+
+                //TODO set poi type
+                // !configFilePoiTypes.exist(tags.get("type"))
+                // poiType = new PoiType("typeName");
+                // add new poi type to configFilePoiTypes
+                // if no poi type found > exit!
             }
         }
 
@@ -259,6 +272,10 @@ public class OSMSyncController implements ISyncController {
         try {
             conManager = ConnectionManager.getInstance();
             conManager.BeginTransaction();
+
+            // Insert/Update all PoiTypes
+            // add all with ID = null in db
+            // add to config file
 
             // Insert new POIs into database
             List<POI> insertPoiList = new ArrayList<POI>(poisHashMap.values());

@@ -65,7 +65,7 @@ public class ConnectionManager {
     //endregion
 
     public void BeginTransaction() {
-        if (_connection == null) {
+        if (_connection != null) {
             try {
                 _connection.setAutoCommit(false);
             } catch (SQLException e) {
@@ -75,7 +75,7 @@ public class ConnectionManager {
     }
 
     public void EndTransaction() {
-        if (_connection == null) {
+        if (_connection != null) {
             try {
                 _connection.setAutoCommit(true);
             } catch (SQLException e) {
