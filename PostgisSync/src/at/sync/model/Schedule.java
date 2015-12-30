@@ -1,5 +1,6 @@
 package at.sync.model;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.UUID;
 
@@ -12,15 +13,15 @@ public class Schedule extends Entity {
     private Timestamp validFrom;
     private Timestamp validUntil;
     private Timestamp explicitDate;
-    private Timestamp arrivalTime;
-    private Timestamp departureTime;
+    private Time arrivalTime;
+    private Time departureTime;
     private int seqNo;
     private POI poi;
 
     public Schedule() {
     }
 
-    public Schedule(UUID id, int tripNo, Timestamp validFrom, Timestamp validUntil, Timestamp explicitDate, Timestamp arrivalTime, Timestamp departureTime, int seqNo) {
+    public Schedule(UUID id, int tripNo, Timestamp validFrom, Timestamp validUntil, Timestamp explicitDate, Time arrivalTime, Time departureTime, int seqNo) {
         this.id = id;
         this.tripNo = tripNo;
         this.validFrom = validFrom;
@@ -71,19 +72,19 @@ public class Schedule extends Entity {
         this.explicitDate = explicitDate;
     }
 
-    public Timestamp getArrivalTime() {
+    public Time getArrivalTime() {
         return arrivalTime;
     }
 
-    public void setArrivalTime(Timestamp arrivalTime) {
+    public void setArrivalTime(Time arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
 
-    public Timestamp getDepartureTime() {
+    public Time getDepartureTime() {
         return departureTime;
     }
 
-    public void setDepartureTime(Timestamp departureTime) {
+    public void setDepartureTime(Time departureTime) {
         this.departureTime = departureTime;
     }
 
