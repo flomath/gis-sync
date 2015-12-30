@@ -31,6 +31,7 @@ public class FileReaderUtility {
             JsonReader reader = Json.createReader(new FileReader(path));
 
             object = reader.readObject();
+            reader.close();
         } catch (Exception e) {
             // no json file available
         }
