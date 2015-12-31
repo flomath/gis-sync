@@ -30,7 +30,7 @@ public class TransportationRouteDAO {
     private static final String extRef = "ext_ref";
     private static final String descriptionFrom = "desc_from";
     private static final String descriptionTo = "desc_to";
-    private static final String description = "desc";
+    private static final String description = "desce";
     private static final String routeNo = "route_no";
 
     /**
@@ -85,6 +85,9 @@ public class TransportationRouteDAO {
 
             ps.executeBatch();
             ps.close();
+
+            ScheduleDAO scheduleDAO = new ScheduleDAO();
+            scheduleDAO.insertOrUpdateSchedules(transportationRouteList);
         } catch (Exception e) {
             e.printStackTrace();
             throw e;
@@ -112,8 +115,12 @@ public class TransportationRouteDAO {
             String query = "Select * from transportation_route";
             result = conn.createStatement().executeQuery(query);
 
+            ScheduleDAO scheduleDAO = new ScheduleDAO();
             while (result.next()) {
                 transportationRoutes.add(mapSetToObject(result, transportationTypes));
+            }
+            for (TransportationRoute transportationRoute : transportationRoutes) {
+                transportationRoute.setSchedules(scheduleDAO.getValidSchedules(transportationRoute));
             }
         } catch (Exception e) {
             e.printStackTrace();

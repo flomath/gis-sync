@@ -23,6 +23,8 @@ import java.util.UUID;
  */
 public class ScheduleDAO {
 
+    public static final String table = "schedule";
+
     private static final String id = "id";
     private static final String tripNo = "trip_nr";
     private static final String validFrom = "valid_from";
@@ -41,7 +43,9 @@ public class ScheduleDAO {
      * @return String
      */
     private String getDbColumns() {
-        return String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s", id, tripNo, validFrom, validUntil, explicitDate, arrivalTime, departureTime, transportationRouteID, scheduleDayID, poiID, seqNo);
+        return String.format("%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s",
+                id, tripNo, validFrom, validUntil, explicitDate, arrivalTime,
+                departureTime, transportationRouteID, scheduleDayID, poiID, seqNo);
     }
 
     /**
@@ -68,7 +72,7 @@ public class ScheduleDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = String.format("INSERT INTO shedule (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", this.getDbColumns());
+            String query = String.format("INSERT INTO %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table, this.getDbColumns());
             PreparedStatement ps = conn.prepareStatement(query);
 
             List<Schedule> schedules = transportationRoute.getSchedules();
@@ -116,7 +120,9 @@ public class ScheduleDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = "UPDATE shedule SET trip_no=?, valid_from=?, valid_until=?, explicit_date=?, arrival_time=?, departure_time=?, transportation_route_id=?, shedule_day_id=?, poi_id=?, seq_no=?, ext_ref=? where id=?";
+            String query = String.format("UPDATE %s SET %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=? where %s=?",
+                    table, tripNo, validFrom, validUntil, explicitDate, arrivalTime,
+                    departureTime, transportationRouteID, scheduleDayID, poiID, seqNo, id);
             PreparedStatement ps = conn.prepareStatement(query);
 
             List<Schedule> schedules = transportationRoute.getSchedules();
@@ -160,13 +166,19 @@ public class ScheduleDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = "Select * from shedule where transportation_route_id=? and valid_until is null";
-            result = conn.createStatement().executeQuery(query);
+            String query = String.format("Select %s, %s from %s join %s on %s = %s where %s=? and %s is null order by %s",
+                    table + ".*", POIDAO.table + "." + POIDAO.extRef + " " + POIDAO.table + "_" + POIDAO.extRef,
+                    table, POIDAO.table, poiID, POIDAO.table + "." + POIDAO.id,
+                    transportationRouteID, validUntil, seqNo);
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setObject(1, transportationRoute.getId());
+            result = ps.executeQuery();
 
             while(result.next()){
                 schedules.add(mapSetToObject(result));
             }
 
+            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -201,8 +213,10 @@ public class ScheduleDAO {
             schedule.setExplicitDate(resultSet.getTimestamp(explicitDate));
             schedule.setArrivalTime(resultSet.getTime(arrivalTime));
             schedule.setDepartureTime(resultSet.getTime(departureTime));
-            //TODO!
-            //schedule.setPoi(UUID.fromString(resultSet.getString(poiID)));
+            POI poi = new POI();
+            poi.setId(UUID.fromString(resultSet.getString(poiID)));
+            poi.setExtRef(resultSet.getString(POIDAO.table + "_" + POIDAO.extRef));
+            schedule.setPoi(poi);
             schedule.setSeqNo(resultSet.getInt(seqNo));
         } catch (SQLException e) {
             e.printStackTrace();

@@ -2,6 +2,7 @@ package at.sync.dao;
 
 import at.sync.model.POI;
 import at.sync.model.POIType;
+import org.postgis.PGgeometry;
 import org.postgresql.geometric.PGpoint;
 import org.postgresql.util.PGobject;
 
@@ -18,12 +19,14 @@ import java.util.*;
  */
 public class POIDAO {
 
-    private static final String id = "id";
+    public static final String table = "poi";
+
+    public static final String id = "id";
     private static final String name = "name";
-    private static final String poiTypeID = "poi_type_id";
+    private static final String poiTypeID = "poitype_id";
     private static final String radius = "radius";
     private static final String position = "position";
-    private static final String extRef = "ext_ref";
+    public static final String extRef = "ext_ref";
 
     /**
      * Get all DB Columns
@@ -45,7 +48,7 @@ public class POIDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, point(?, ?), ?)", this.getDbColumns());
+            String query = String.format("INSERT INTO poi (%s) values (?, ?, ?, ?, point(?, ?)::geometry, ?)", this.getDbColumns());
             PreparedStatement ps = conn.prepareStatement(query);
 
             for(POI poi : poiList) {
@@ -90,7 +93,7 @@ public class POIDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = "UPDATE poi SET name=?, poi_type_id=?, radius=?, position=point(?,?), ext_ref=? where id=?";
+            String query = "UPDATE poi SET name=?, poitype_id=?, radius=?, position=point(?,?)::geometry, ext_ref=? where id=?";
             PreparedStatement ps = conn.prepareStatement(query);
 
             for(POI poi : poiList) {
@@ -176,10 +179,10 @@ public class POIDAO {
             poi.setPoiType(poiTypes.get(resultSet.getString(poiTypeID)));
             poi.setRadius(resultSet.getDouble(radius));
             poi.setExtRef(resultSet.getString(extRef));
-            PGpoint point = (PGpoint)resultSet.getObject(position);
-            if (point != null) {
-                poi.setLatitude(point.x);
-                poi.setLongitude(point.y);
+            PGgeometry geometry = (PGgeometry) resultSet.getObject(position);
+            if (geometry != null) {
+                poi.setLatitude(geometry.getGeometry().getFirstPoint().x);
+                poi.setLongitude(geometry.getGeometry().getFirstPoint().y);
             }
         } catch (SQLException e) {
             e.printStackTrace();

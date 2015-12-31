@@ -12,6 +12,8 @@ import java.util.List;
 public class boot {
     public static void main(String[] args) {
 
+        // TODO: database (schedule.shedule_day_id nullable) (schedule.arrival_time nullable)
+
         OSMSyncController syncController = new OSMSyncController();
         try {
             syncController.startSync();

@@ -3,7 +3,6 @@ package at.sync.controller;
 import at.sync.dao.*;
 import at.sync.model.*;
 import at.sync.util.SyncConfigReader;
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import de.topobyte.osm4j.core.access.OsmIterator;
 import de.topobyte.osm4j.core.model.iface.*;
 import de.topobyte.osm4j.core.model.util.OsmModelUtil;

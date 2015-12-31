@@ -2,6 +2,7 @@ package at.sync.model;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -20,7 +21,7 @@ public class TransportationRoute extends Entity {
     private String descriptionTo;
     private String description;
     private String routeNo;
-    private ArrayList<Schedule> schedules = new ArrayList<>();
+    private List<Schedule> schedules = new ArrayList<>();
 
     public TransportationRoute() {
     }
@@ -136,11 +137,11 @@ public class TransportationRoute extends Entity {
         this.routeNo = routeNo;
     }
 
-    public ArrayList<Schedule> getSchedules() {
+    public List<Schedule> getSchedules() {
         return schedules;
     }
 
-    public void setSchedules(ArrayList<Schedule> schedules) {
+    public void setSchedules(List<Schedule> schedules) {
         this.schedules = schedules;
     }
 }
