@@ -20,6 +20,8 @@ import java.util.UUID;
  */
 public class TransportationRouteDAO {
 
+    private static final String table = "transportation_route";
+
     private static final String id = "id";
     private static final String name = "name";
     private static final String validFrom = "valid_from";
@@ -43,7 +45,7 @@ public class TransportationRouteDAO {
     }
 
     /**
-     * Insert POIs
+     * Insert Transportation route
      *
      * @param transportationRouteList
      * @throws Exception
@@ -53,7 +55,7 @@ public class TransportationRouteDAO {
         try {
             conn = ConnectionManager.getInstance().getConnection();
 
-            String query = String.format("INSERT INTO transportation_route (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", getDbColumns());
+            String query = String.format("INSERT INTO %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table, getDbColumns());
             PreparedStatement ps = conn.prepareStatement(query);
 
             for(TransportationRoute transportationRoute : transportationRouteList) {
@@ -94,6 +96,67 @@ public class TransportationRouteDAO {
         } finally {
         }
     }
+
+    /**
+     * Update Transportation route
+     *
+     * @param transportationRouteList
+     * @throws Exception
+     */
+    public void updateTransportationRoutes(List<TransportationRoute> transportationRouteList) throws Exception {
+        Connection conn = null;
+        try {
+            conn = ConnectionManager.getInstance().getConnection();
+
+            String query = String.format("UPDATE %s SET %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=? where %s=?",
+                    table, name, validFrom, validUntil,
+                    transportationID, operator, network, extRef,
+                    description, descriptionFrom, descriptionTo, routeNo, id;
+
+            PreparedStatement ps = conn.prepareStatement(query);
+
+            for(TransportationRoute transportationRoute : transportationRouteList) {
+                if(transportationRoute.getId() == null)
+                    continue;
+
+                PGobject toInsertUUID = new PGobject();
+                toInsertUUID.setType("uuid");
+                if(transportationRoute.getId() == null) {
+                    transportationRoute.setId(UUID.randomUUID());
+                }
+
+                toInsertUUID.setValue(String.valueOf(transportationRoute.getId()));
+
+                ps.setString(1, transportationRoute.getName());
+                ps.setTimestamp(2, transportationRoute.getValidFrom());
+                ps.setTimestamp(3, transportationRoute.getValidUntil());
+                ps.setObject(4, transportationRoute.getType() != null ? transportationRoute.getType().getId() : null);
+                ps.setString(5, transportationRoute.getOperator());
+                ps.setString(6, transportationRoute.getNetwork());
+                ps.setString(7, transportationRoute.getExtRef());
+                ps.setString(8, transportationRoute.getDescription());
+                ps.setString(9, transportationRoute.getDescriptionFrom());
+                ps.setString(10, transportationRoute.getDescriptionTo());
+                ps.setString(11, transportationRoute.getRouteNo());
+                ps.setObject(12, toInsertUUID);
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            ps.close();
+
+            ScheduleDAO scheduleDAO = new ScheduleDAO();
+            scheduleDAO.insertOrUpdateSchedules(transportationRouteList);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+        }
+    }
+
+
+
     /**
      * Get all TransportationRoutes
      *
