@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="osm4jcore">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/osm4jcore.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
