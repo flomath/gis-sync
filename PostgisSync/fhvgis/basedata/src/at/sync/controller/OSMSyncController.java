@@ -53,7 +53,7 @@ public class OSMSyncController implements ISyncController {
 
         // fetch all routes with POIs from osm
         // Overpass-API query
-        String query = "http://overpass-api.de/api/interpreter?data=%5Bout%3Axml%5D%5Btimeout%3A25%5D%3B%0A%2F%2F%20fetch%20area%20%E2%80%9CG%C3%B6tzis%E2%80%9D%20to%20search%20in%0Aarea%283600075231%29-%3E.searchArea%3B%0A%2F%2F%20gather%20results%0A%28%0A%20%20%2F%2F%20query%20part%20for%3A%20%E2%80%9Croute%3Dbus%E2%80%9D%0A%20%20node%5B%22route%22%3D%22bus%22%5D%28area.searchArea%29%3B%0A%20%20way%5B%22route%22%3D%22bus%22%5D%28area.searchArea%29%3B%0A%20%20relation%5B%22route%22%3D%22bus%22%5D%28area.searchArea%29%3B%0A%29%3B%0A%2F%2F%20print%20results%0Aout%20body%3B%0A%3E%3B%0Aout%20meta%20qt%3B";
+        String query = "http://overpass-api.de/api/interpreter?data=%5Bout%3Axml%5D%3B%2F%2F%5Btimeout%3A25%5D%3B%0A%2F%2F%20fetch%20area%20%E2%80%9CG%C3%B6tzis%E2%80%9D%20to%20search%20in%0Aarea%283600074942%29-%3E.searchArea%3B%0A%2F%2F%20gather%20results%0A%28%0A%20%20%2F%2F%20query%20part%20for%3A%20%E2%80%9Croute%3Dbus%E2%80%9D%0A%20%20relation%5B%22route%22%3D%22bus%22%5D%28area.searchArea%29%3B%0A%29%3B%0A%2F%2F%20print%20results%0Aout%20body%3B%0A%3E%3B%0Aout%20meta%20qt%3B";
 
         InputStream input = null;
         try {
@@ -311,7 +311,8 @@ public class OSMSyncController implements ISyncController {
                 }
 
                 if(osmPoiType == "") {
-                    throw new Exception("Could not find POI-Type!");
+                    osmPoiType = "undef_stop";
+                    this.DebugOut("Could not specify POI-Type for ext_ref = " + nodeRef);
                     // Couldn't find the proper POI-Type!!
                 }
 
@@ -340,6 +341,9 @@ public class OSMSyncController implements ISyncController {
             for ( Schedule schedule : transportationRoute.getSchedules() ) {
                 schedule.setValidUntil(now);
             }
+
+            // also update inactive transportation routes
+            transportationRoutes.add(transportationRoute);
         }
 
         // Start Synchronization Step
@@ -364,8 +368,7 @@ public class OSMSyncController implements ISyncController {
             poiDAO.insertPOIs(insertPoiList);
 
             // Update existing POIs
-            poiDAO.updatePOIs(new ArrayList<>(poisHashMap.values()));
-
+            poiDAO.updatePOIs(insertPoiList);
 
 
             // Insert TransportationTypes with IsDirtyFlag
@@ -379,6 +382,7 @@ public class OSMSyncController implements ISyncController {
 
             // Add Transportation Routes
             transportationRouteDAO.insertTransportationRoutes(transportationRoutes);
+            transportationRouteDAO.updateTransportationRoutes(transportationRoutes);
 
 
             // Write PoiType-Mapping to File

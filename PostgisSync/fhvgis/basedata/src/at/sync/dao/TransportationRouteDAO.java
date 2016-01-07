@@ -111,7 +111,7 @@ public class TransportationRouteDAO {
             String query = String.format("UPDATE %s SET %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=?, %s=? where %s=?",
                     table, name, validFrom, validUntil,
                     transportationID, operator, network, extRef,
-                    description, descriptionFrom, descriptionTo, routeNo, id;
+                    description, descriptionFrom, descriptionTo, routeNo, id);
 
             PreparedStatement ps = conn.prepareStatement(query);
 
